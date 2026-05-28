@@ -1,0 +1,20 @@
+{
+  "name": "api-observability",
+  "version": "1.0.0",
+  "description": "API com tracing OpenTelemetry exportando para Jaeger",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --require ./tracing.js index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "@opentelemetry/sdk-node": "^0.57.2",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.57.2",
+    "@opentelemetry/instrumentation-http": "^0.57.2",
+    "@opentelemetry/instrumentation-express": "^0.47.0",
+    "@opentelemetry/resources": "^1.30.1",
+    "@opentelemetry/semantic-conventions": "^1.28.0",
+    "dotenv": "^16.4.7"
+  }
+}
