@@ -1,211 +1,138 @@
-# Grupo G9 - Observabilidade e Tracing em Agentes de IA
+# Grupo G9 - Observabilidade e Tracing em Agentes de IA (Alinhamento Checkpoint 1 & 2)
 
-Protótipo acadêmico para demonstrar, de forma prática, como instrumentar aplicações Node.js com OpenTelemetry e visualizar traces distribuídos no Jaeger.
+Este repositório contém o protótipo acadêmico desenvolvido para demonstrar, de forma prática, a instrumentação e observabilidade em sistemas inteligentes baseados em **Agentes de Inteligência Artificial**. 
 
-## 🎯 Objetivo do Projeto
-
-Sistemas agênticos e pipelines de IA costumam sofrer com o problema de opacidade: sabemos a entrada e a saída, mas não enxergamos claramente o que aconteceu no meio do caminho.
-
-Este repositório valida, em escala de laboratório, como aplicar observabilidade para reduzir esse efeito de caixa-preta por meio de:
-
-- geração automática de spans em requisições HTTP e rotas Express;
-- criação de spans manuais para etapas de negócio;
-- exportação OTLP/gRPC para backend de observabilidade (Jaeger);
-- inspeção visual da timeline, atributos e eventos de execução.
-
-No estado atual do código, o protótipo usa uma API Express (simulação de fluxo de agente) e não contém implementação de LangGraph/OpenLLMetry ainda.
-
-## 🏗️ Arquitetura e Funcionamento
-
-### Visão geral
-
-```mermaid
-flowchart LR
-	C[Cliente HTTP] -->|GET / ou /process| A[App Node.js + Express]
-	A -->|Instrumentação automática| O[OpenTelemetry SDK]
-	A -->|Span manual processamento-dados| O
-	O -->|OTLP gRPC :4317| J[Jaeger Collector]
-	J -->|UI :16686| U[Análise de traces]
-```
-
-### Componentes reais do workspace
-
-- `docker-compose.yml`: sobe apenas o Jaeger (`16686`, `4317`, `4318`).
-- `app/tracing.js`: inicializa `NodeSDK`, exportador OTLP gRPC e instrumentações HTTP/Express.
-- `app/index.js`: API instrumentada com rotas `GET /` e `GET /process`.
-- `backend/src/index.js`: backend simples de referência, sem tracing OpenTelemetry.
-
-### Fluxo da aplicação instrumentada (`app/`)
-
-1. O processo inicia com `node --require ./tracing.js index.js`.
-2. O OpenTelemetry SDK registra recurso do serviço (`OTEL_SERVICE_NAME`, padrão `api-observability`).
-3. Requisições HTTP/Express recebem spans automáticos.
-4. Na rota `GET /process`, o código abre um span manual `processamento-dados`.
-5. O span manual recebe atributos e evento de conclusão.
-6. Os traces são exportados para `OTEL_EXPORTER_OTLP_ENDPOINT` (padrão `http://localhost:4317`).
-7. O Jaeger exibe a árvore de spans para análise.
-
-### Sobre LangGraph, nós e ferramentas simuladas
-
-Para manter fidelidade ao código atual:
-
-- Não há grafo LangGraph implementado neste repositório.
-- Não há definição de nós de agente/tool-calling no código.
-- A ferramenta simulada do protótipo é a própria etapa de negócio da rota `GET /process` (delay + evento + atributos), usada para demonstrar rastreabilidade ponta a ponta.
-
-## 🛠️ Tecnologias Utilizadas
-
-- `Node.js 20` (imagem `node:20-alpine` no Dockerfile da app)
-- `Express 4` (API HTTP)
-- `OpenTelemetry SDK (Node)`
-- `OpenTelemetry API`
-- `OTLP Trace Exporter (gRPC)`
-- `OpenTelemetry Instrumentation HTTP`
-- `OpenTelemetry Instrumentation Express`
-- `Jaeger` (coleta e visualização de traces)
-- `Docker` e `Docker Compose`
-- `dotenv` (carregamento de variáveis de ambiente)
-
-Dependências observadas diretamente em `app/package.json` e `backend/package.json`.
-
-## 🚀 Como Executar o Projeto
-
-### 1. Clonar o repositório
-
-```bash
-git clone https://github.com/nicolaskms/observability-tracing.git
-cd observability-tracing
-```
-
-### 2. Subir o stack de observabilidade (Jaeger)
-
-```bash
-docker-compose up -d
-```
-
-### 3. Configurar variáveis de ambiente da aplicação
-
-No diretório `app/`, crie um arquivo `.env` (opcional). Exemplo:
-
-```env
-OTEL_SERVICE_NAME=api-observability
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
-PORT=3000
-```
-
-Observação: não existe chave de API obrigatória no código atual.
-
-### 4. Instalar dependências da app instrumentada
-
-```bash
-cd app
-npm install
-```
-
-### 5. Rodar a app instrumentada
-
-```bash
-npm start
-```
-
-### 6. Disparar requisições de teste
-
-```bash
-curl http://localhost:3000/
-curl http://localhost:3000/process
-```
-
-### 7. Visualizar traces no Jaeger
-
-1. Acesse: `http://localhost:16686`
-2. Selecione o serviço `api-observability`
-3. Clique em **Find Traces**
-
-### Execução alternativa do backend simples (`backend/`)
-
-Este serviço não está instrumentado com OpenTelemetry no estado atual, mas pode ser executado para comparação:
-
-```bash
-cd backend
-npm install
-npm start
-```
-
-## 🧪 Cenários de Teste Induzidos
-
-### 1) Execução Bem-Sucedida
-
-Objetivo: validar captura e visualização de trace completo.
-
-Passos:
-
-```bash
-docker-compose up -d
-cd app
-npm install
-npm start
-```
-
-Em outro terminal:
-
-```bash
-curl http://localhost:3000/process
-```
-
-Resultado esperado:
-
-- resposta HTTP `200` com `Processamento concluído com sucesso`;
-- trace visível no Jaeger para `api-observability`;
-- presença do span manual `processamento-dados` com atributos/evento.
-
-### 2) Falha Controlada
-
-Objetivo: simular falha no envio de telemetria sem derrubar a API.
-
-Opção recomendada: iniciar a app com endpoint OTLP inválido.
-
-PowerShell (Windows):
-
-```powershell
-cd app
-$env:OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:9999"
-npm start
-```
-
-Disparo:
-
-```bash
-curl http://localhost:3000/process
-```
-
-Resultado esperado:
-
-- API segue respondendo normalmente;
-- traces não chegam ao Jaeger;
-- logs indicam problema de exportação/conectividade OTLP.
-
-### 3) Loop Repetitivo
-
-Objetivo: gerar múltiplos traces em sequência para observar padrão repetitivo e volume.
-
-Bash:
-
-```bash
-for i in {1..10}; do curl -s http://localhost:3000/process > /dev/null; done
-```
-
-PowerShell:
-
-```powershell
-1..10 | ForEach-Object { Invoke-RestMethod "http://localhost:3000/process" | Out-Null }
-```
-
-Resultado esperado:
-
-- 10 traces novos para a rota `/process`;
-- visão clara de repetição temporal no Jaeger;
-- possibilidade de comparar duração e consistência dos spans.
+Em alinhamento total com as especificações do **Checkpoint 1**, o projeto foi totalmente reestruturado em **Python** utilizando **LangGraph** para orquestração de estados, **Arize Phoenix** para visualização local de telemetria e **OpenLLMetry (Traceloop)** para padronização de traces e geração automática de spans Generative AI.
 
 ---
 
-Projeto acadêmico do Grupo G9, focado em fundamentos de observabilidade aplicados a sistemas inteligentes e componentes agênticos.
+## 🎯 Objetivo do Projeto
+
+Sistemas multiagentes e pipelines de decisão agênticos operam com fluxos de execução não-determinísticos. Rastrear o que ocorre em tempo de execução ("abrir a caixa-preta") é vital para:
+1.  **Identificar gargalos de latência** em chamadas de LLM ou chamadas de ferramentas externas.
+2.  **Mapear erros e falhas em ferramentas (Tools)** capturando exceções de forma granular.
+3.  **Detectar loops repetitivos** (loops de retroalimentação) que estouram limites computacionais ou geram custos inflados de tokens.
+
+---
+
+## 🏗️ Arquitetura e Funcionamento
+
+### Visão Geral do Sistema
+
+```mermaid
+flowchart TD
+    User([Prompt do Usuário]) -->|Dispara Fluxo| LG[LangGraph Agent Engine]
+    
+    subgraph LangGraph Graph [Grafo de Estados do Agente]
+        Entry[Nó de Entrada] --> Model[Nó do Assistente: LLM Mock]
+        Model -->|should_continue| Check{Decisão}
+        Check -->|Solicita Tools| ToolsNode[Nó de Execução de Ferramentas]
+        ToolsNode -->|Retorna Resultado| Model
+        Check -->|Fim do Fluxo| End[Nó de Saída END]
+    end
+
+    subgraph Telemetria e Observabilidade
+        Model -.->|Gera Spans Generative AI| TL[Traceloop SDK / OpenTelemetry]
+        ToolsNode -.->|Gera Spans de Tools & Erros| TL
+        TL -->|Exportação OTLP/HTTP| AP[Arize Phoenix Local Collector :6006]
+    end
+
+    AP -->|UI de Análise de Traces| Browser[Painel de Inspeção Visual]
+```
+
+### Componentes do Projeto (`app/`)
+
+*   `app/agent.py`: Define a estrutura do assistente automatizado via **LangGraph**:
+    *   **Estado (`AgentState`)**: Sequência acumulada de mensagens.
+    *   **LLM Mock (`MockChatOpenAI`)**: Um modelo de chat personalizado integrado ao LangChain que emula de forma determinística as tomadas de decisões e chamadas de ferramentas dependendo do prompt, gerando traces idênticos a chamadas de produção da OpenAI. **Não requer chaves de API**, garantindo portabilidade de execução sem custos.
+    *   **Ferramenta 1 (`search_customer_db`)**: Simula consulta ao cadastro e plano do cliente no banco de dados.
+    *   **Ferramenta 2 (`call_logistics_api`)**: Simula chamada de logística. Lança um erro controlado (`ValueError`) caso o formato do ID não esteja em conformidade (exemplo sem o prefixo `#`), ativando a telemetria de erro.
+*   `app/tracing.py`: Inicializa o servidor do **Arize Phoenix** localmente e acopla a instrumentação do **Traceloop (OpenLLMetry)** para exportar dados OTLP/HTTP para a porta local `6006`.
+*   `app/main.py`: Script que orquestra o disparo automático dos três experimentos propostos no Checkpoint 1.
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### Pré-requisitos
+*   **Python 3.11** ou superior instalado na máquina.
+*   Porta `6006` liberada (usada pelo Arize Phoenix).
+
+### 1. Preparar o Ambiente
+
+Crie e ative um ambiente virtual Python (opcional, mas altamente recomendado):
+
+```bash
+# Criar ambiente virtual
+python -m venv venv
+
+# Ativar ambiente virtual
+# No Windows (CMD / PowerShell):
+.\venv\Scripts\activate
+# No macOS / Linux:
+source venv/bin/activate
+```
+
+### 2. Instalar Dependências
+
+Instale os pacotes necessários definidos no `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configurar Variáveis de Ambiente
+
+O projeto já inclui um arquivo `.env` configurado com os valores de localhost ideais. Caso queira modificar a porta do Phoenix ou hospedar remotamente, edite o arquivo `.env`:
+
+```env
+OPENAI_API_KEY=mock-key-not-needed
+PHOENIX_PORT=6006
+PHOENIX_HOST=127.0.0.1
+TRACELOOP_BASE_URL=http://127.0.0.1:6006/v1/traces
+```
+
+### 4. Executar os Experimentos
+
+Rode o arquivo de testes principal. Ele iniciará o painel do Phoenix e executará as três simulações em sequência:
+
+```bash
+python app/main.py
+```
+
+---
+
+## 🧪 Experimentos Executados e Resultados Visualizados no Phoenix
+
+Ao executar o script, os três cenários de testes induzidos definidos no Checkpoint 1 são processados:
+
+### Experimento 1: Execução Bem-Sucedida
+*   **Prompt**: "Olá, pode verificar o status do cadastro da Ana Silva e rastrear o último pedido dela?"
+*   **Fluxo**: O agente consulta a ferramenta de banco de dados (`search_customer_db`), localiza o ID do último pedido (`#9834`), aciona a API de logística (`call_logistics_api`) para rastrear o pacote e exibe a resposta consolidada de sucesso ao usuário.
+*   **Exibição no Phoenix**: Visualização de uma árvore de spans completa contendo a hierarquia de chamadas, latência de cada etapa, chamadas de tools de forma aninhada, metadados e parâmetros passados a cada função.
+
+### Experimento 2: Falha Controlada na Tool
+*   **Prompt**: "Por favor, rastreie o status de entrega do pedido 9901" *(Nota: sem o caractere `#` obrigatório)*
+*   **Fluxo**: O agente chama a ferramenta de logística passanddo o argumento `"9901"`. A ferramenta valida o formato e lança um erro controlando do tipo `ValueError`. O agente lida com a exceção e informa amigavelmente o usuário sobre o ocorrido.
+*   **Exibição no Phoenix**: O span da ferramenta `call_logistics_api` é destacado em **vermelho (Status: ERROR)** na timeline do Phoenix. Clicando sobre ele, é possível visualizar o Stack Trace completo do erro Python (`ValueError: Erro na API de Logística...`) de forma granular sem que a aplicação tenha quebrado.
+
+### Experimento 3: Comportamento de Loop Repetitivo
+*   **Prompt**: "Gere um comportamento de loop nas chamadas de ferramentas para testar o sistema."
+*   **Fluxo**: O agente cai em uma tomada de decisão cíclica induzida, tentando consultar a ferramenta de forma infinita. A proteção nativa do LangGraph é ativada por meio do parâmetro `recursion_limit=5`. O grafo de estados atinge o limite e interrompe a execução com um erro de recursão (`GraphRecursionError`).
+*   **Exibição no Phoenix**: Linha do tempo mostrando o padrão cíclico e repetitivo de spans se abrindo recursivamente. O trace do Phoenix destaca visualmente onde o limite foi estourado, facilitando a depuração desse padrão prejudicial para sistemas em produção.
+
+---
+
+## 📊 Visualização de Métricas no Phoenix
+
+Após a execução, mantenha o script rodando e acesse:
+👉 **[http://127.0.0.1:6006](http://127.0.0.1:6006)**
+
+Na interface web do Phoenix, você terá acesso a:
+*   **Árvore de Execução Completa (Traces)**: Navegação visual profunda por cada chamada e fluxo de estado do LangGraph.
+*   **Metadados de IA Generativa**: Latência média, consumo de tokens estimado (se usando chaves reais) e status de sucesso/falha de cada nó.
+*   **Inspeção de Spans**: Análise de parâmetros de entrada, saídas brutas das funções de banco de dados e logística e rastreamento de exceções capturadas.
+
+---
+
+*Desenvolvido pelo Grupo G9.*
