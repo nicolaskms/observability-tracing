@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 340" font-family="Segoe UI, Arial, sans-serif">
+<rect x="0" y="0" width="560" height="340" fill="#ffffff"/>
+<text x="280.0" y="30" text-anchor="middle" font-size="20" font-weight="700" fill="#1f2d4d">Latência estimada por cenário (ms)</text>
+<line x1="60" y1="270.0" x2="536" y2="270.0" stroke="#e3e8f0" stroke-width="1"/>
+<text x="52" y="274.0" text-anchor="end" font-size="12" fill="#6b7280">0</text>
+<line x1="60" y1="216.5" x2="536" y2="216.5" stroke="#e3e8f0" stroke-width="1"/>
+<text x="52" y="220.5" text-anchor="end" font-size="12" fill="#6b7280">750</text>
+<line x1="60" y1="163.0" x2="536" y2="163.0" stroke="#e3e8f0" stroke-width="1"/>
+<text x="52" y="167.0" text-anchor="end" font-size="12" fill="#6b7280">1500</text>
+<line x1="60" y1="109.5" x2="536" y2="109.5" stroke="#e3e8f0" stroke-width="1"/>
+<text x="52" y="113.5" text-anchor="end" font-size="12" fill="#6b7280">2250</text>
+<line x1="60" y1="56.0" x2="536" y2="56.0" stroke="#e3e8f0" stroke-width="1"/>
+<text x="52" y="60.0" text-anchor="end" font-size="12" fill="#6b7280">3000</text>
+<rect x="98.1" y="116.3" width="82.5" height="153.7" rx="6" fill="#2e7d32"/>
+<text x="139.3" y="108.3" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2d4d">2155 ms</text>
+<text x="139.3" y="292.0" text-anchor="middle" font-size="13" fill="#374151">Sucesso</text>
+<rect x="256.7" y="169.8" width="82.5" height="100.2" rx="6" fill="#c0392b"/>
+<text x="298.0" y="161.8" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2d4d">1405 ms</text>
+<text x="298.0" y="292.0" text-anchor="middle" font-size="13" fill="#374151">Falha</text>
+<rect x="415.4" y="118.8" width="82.5" height="151.2" rx="6" fill="#e08a00"/>
+<text x="456.7" y="110.8" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2d4d">2120 ms</text>
+<text x="456.7" y="292.0" text-anchor="middle" font-size="13" fill="#374151">Loop</text>
+<line x1="60" y1="270" x2="536" y2="270" stroke="#9aa5b8" stroke-width="1.5"/>
+</svg>

@@ -215,7 +215,10 @@ def should_continue(state: AgentState) -> str:
     last_message = state["messages"][-1]
     # Se o LLM emitiu chamadas de ferramentas, segue para o nó de ferramentas
     if hasattr(last_message, "tool_calls") and last_message.tool_calls:
-        print(f"[Grafo] Roteador: LLM solicitou ferramentas -> {last_message.tool_calls[0].name}")
+        # LangChain >= 0.3 representa ToolCall como TypedDict — acessar via ['name']
+        tc = last_message.tool_calls[0]
+        name = tc['name'] if isinstance(tc, dict) else tc.name
+        print(f"[Grafo] Roteador: LLM solicitou ferramentas -> {name}")
         return "tools"
     # Caso contrário, encerra o fluxo do grafo
     print("[Grafo] Roteador: Fim da execução")

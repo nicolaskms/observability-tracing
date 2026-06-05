@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel A1 — G9 Observabilidade e Tracing</title>
+<!--
+  ============================================================================
+  PAINEL A1 (DRAFT) — Grupo G9 · Observabilidade e Tracing em Agentes de IA
+  ============================================================================
+  Tamanho: A1 retrato (594mm x 841mm), 1 página. Fonte do corpo >= 24pt.
+  Exportar PDF: abrir no Chrome/Edge -> Ctrl+P -> "Salvar como PDF",
+                Papel A1, Margens "Nenhuma", marcar "Gráficos de plano de fundo".
+  Imagens (relativas à raiz do repo):
+    ../results/*.svg  -> python app/collect_metrics.py
+    ../docs/*.png     -> screenshots do Phoenix (ver docs/README.md)
+  ============================================================================
+-->
+<style>
+  @page { size: 594mm 841mm; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --navy:#1f2d4d; --navy2:#2b3f6b; --ink:#1f2937; --muted:#5b6678;
+    --line:#dce2ee; --bg:#eef1f8; --card:#ffffff;
+    --ok:#2e7d32; --err:#c0392b; --warn:#e08a00; --teal:#0e7c86;
+    --okbg:#e8f5e9; --errbg:#fdecea; --warnbg:#fdf3e3; --tealbg:#e3f2f4;
+  }
+  html,body{ background:#525866; }
+  body{ font-family:"Segoe UI",Calibri,Arial,sans-serif; color:var(--ink); }
+
+  .poster{
+    width:594mm; height:841mm; background:var(--bg);
+    padding:11mm 11mm 9mm; display:flex; flex-direction:column; gap:5mm;
+    overflow:hidden; margin:0 auto; font-size:24pt; line-height:1.26;
+  }
+
+  /* ---------- HEADER ---------- */
+  .header{
+    background:linear-gradient(115deg,var(--navy) 0%,var(--navy2) 100%);
+    color:#fff; border-radius:7mm; padding:7mm 10mm; display:flex;
+    align-items:center; gap:9mm; box-shadow:0 2mm 5mm rgba(20,30,60,.22);
+  }
+  .header .badge{ flex:0 0 auto; width:38mm; height:38mm; border-radius:50%;
+    background:rgba(255,255,255,.12); border:2mm solid rgba(255,255,255,.30);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1; }
+  .header .badge b{ font-size:34pt; font-weight:800; }
+  .header .badge span{ font-size:12pt; letter-spacing:.5pt; opacity:.9; }
+  .header .htext{ flex:1; }
+  .header h1{ font-size:50pt; line-height:1.0; font-weight:800; letter-spacing:-.5pt; }
+  .header .sub{ font-size:24pt; font-weight:600; color:#cfe0ff; margin-top:2.5mm; }
+  .header .meta{ font-size:16pt; color:#aebfe0; margin-top:3.5mm; }
+  .header .meta b{ color:#fff; }
+
+  /* ---------- REGIÃO DE 3 COLUNAS ---------- */
+  .region{ flex:1 1 auto; display:grid; grid-template-columns:1fr 1.18fr 1fr;
+    gap:5mm; min-height:0; }
+  .col{ display:flex; flex-direction:column; gap:5mm; min-height:0; }
+
+  .card{ background:var(--card); border-radius:5mm; padding:5mm 5.5mm;
+    box-shadow:0 1mm 3mm rgba(31,45,77,.08); border:0.4mm solid var(--line);
+    display:flex; flex-direction:column; }
+  .card.fill{ flex:1 1 auto; }
+  .card h2{ font-size:24pt; color:var(--navy); font-weight:800; line-height:1.04;
+    display:flex; align-items:center; gap:4mm; margin-bottom:3.5mm;
+    padding-bottom:2.8mm; border-bottom:0.8mm solid var(--line); }
+  .num{ flex:0 0 auto; width:12mm; height:12mm; border-radius:2.8mm;
+    background:var(--navy); color:#fff; font-size:18pt; font-weight:800;
+    display:flex; align-items:center; justify-content:center; }
+  .card p{ margin-bottom:2.6mm; }
+  .card p:last-child{ margin-bottom:0; }
+  .accent{ color:var(--teal); font-weight:700; }
+  strong{ color:var(--navy); }
+  .small{ font-size:16pt; color:var(--muted); }
+
+  /* ---------- GLOSSÁRIO ---------- */
+  .gloss{ display:flex; flex-direction:column; gap:3.4mm; }
+  .gloss .term{ display:flex; gap:4mm; align-items:flex-start; }
+  .gloss .chip{ flex:0 0 auto; min-width:36mm; text-align:center; padding:1.8mm 2mm;
+    border-radius:2mm; background:var(--tealbg); color:var(--teal); font-weight:800; font-size:18pt; }
+  .gloss .def{ font-size:19.5pt; color:var(--ink); line-height:1.26; }
+
+  /* ---------- TABELAS ---------- */
+  table{ width:100%; border-collapse:collapse; font-size:16pt; }
+  th,td{ padding:2.3mm 2.6mm; text-align:left; border-bottom:0.4mm solid var(--line); }
+  thead th{ background:var(--navy); color:#fff; font-weight:700; font-size:15pt; }
+  tbody tr:nth-child(even){ background:#f6f8fc; }
+  td.c,th.c{ text-align:center; }
+  .tot td{ font-weight:800; color:var(--navy); background:#eaf0fb; border-top:0.8mm solid var(--navy); }
+  .soa td .tag{ display:inline-block; padding:.4mm 2mm; border-radius:1.5mm; font-size:12.5pt;
+    font-weight:700; background:#eef1f8; color:var(--navy2); }
+
+  /* ---------- DIAGRAMA ---------- */
+  .diagram{ width:100%; } .diagram svg{ width:100%; height:auto; display:block; }
+
+  /* ---------- KPIs / STACK ---------- */
+  .kpis{ display:grid; grid-template-columns:1fr 1fr; gap:3.5mm; }
+  .kpi{ border-radius:3.5mm; padding:3.5mm; text-align:center; border:0.4mm solid var(--line); }
+  .kpi b{ display:block; font-size:30pt; font-weight:800; line-height:1; }
+  .kpi span{ font-size:13.5pt; color:var(--muted); display:block; margin-top:1.6mm; line-height:1.15; }
+  .kpi.k1{ background:#eef4ff; } .kpi.k1 b{ color:var(--navy); }
+  .kpi.k2{ background:var(--okbg); } .kpi.k2 b{ color:var(--ok); }
+  .kpi.k3{ background:var(--warnbg); } .kpi.k3 b{ color:var(--warn); }
+  .kpi.k4{ background:var(--tealbg); } .kpi.k4 b{ color:var(--teal); }
+  .stacklist{ display:flex; flex-wrap:wrap; gap:2.2mm; margin-top:3mm; }
+  .stacklist span{ background:#eef1f8; color:var(--navy2); border:0.4mm solid var(--line);
+    border-radius:2mm; padding:1.4mm 3mm; font-size:14pt; font-weight:600; }
+
+  /* ---------- BLOCO DISCUSSÃO ---------- */
+  ul.tick{ list-style:none; display:flex; flex-direction:column; gap:2.6mm; }
+  ul.tick li{ font-size:18pt; line-height:1.22; padding-left:7.5mm; position:relative; }
+  ul.tick li::before{ position:absolute; left:0; top:0; font-weight:800; }
+  ul.tick.good li::before{ content:"✓"; color:var(--ok); }
+  ul.tick.lim li::before{ content:"!"; color:var(--warn); }
+  ul.tick.next li::before{ content:"➜"; color:var(--teal); }
+  .disc h3{ font-size:18.5pt; margin:3.5mm 0 2mm; }
+  .disc h3:first-child{ margin-top:0; }
+
+  /* ---------- BLOCO 5: EXPERIMENTO ---------- */
+  .exp{ flex:0 0 auto; }
+  .exp-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:4mm; margin-bottom:4mm; }
+  .scn{ border-radius:3.5mm; padding:3.5mm 4mm; border-left:3mm solid; background:#fafbfe; }
+  .scn.ok{ border-color:var(--ok); } .scn.err{ border-color:var(--err); } .scn.warn{ border-color:var(--warn); }
+  .scn .st{ font-size:18pt; font-weight:800; color:var(--navy); }
+  .scn .pill{ display:inline-block; font-size:12pt; font-weight:800; padding:.5mm 2.2mm; border-radius:8mm; margin-left:1.5mm; vertical-align:middle; }
+  .pill.ok{ background:var(--okbg); color:var(--ok); } .pill.err{ background:var(--errbg); color:var(--err); } .pill.warn{ background:var(--warnbg); color:var(--warn); }
+  .scn .pr{ font-size:13pt; color:var(--muted); font-style:italic; margin:1.6mm 0 2mm; line-height:1.18; }
+  .scn .fx{ font-size:14pt; line-height:1.2; }
+  .scn .fx code{ background:#eef1f8; padding:.2mm 1.2mm; border-radius:1.2mm; font-size:12.5pt; }
+
+  .exp-bottom{ display:grid; grid-template-columns:1.55fr 1fr 1fr; gap:4mm; align-items:start; }
+  .charts{ display:flex; flex-direction:column; gap:3mm; }
+  .charts figure{ background:#fafbfe; border:0.4mm solid var(--line); border-radius:3mm;
+    padding:2mm; height:42mm; display:flex; align-items:center; justify-content:center; }
+  .charts img{ max-width:100%; max-height:100%; display:block; }
+  .shots{ display:flex; flex-direction:column; gap:3mm; }
+  figure.shot{ border:0.6mm dashed #9aa8c4; border-radius:3mm; background:#f3f6fc; height:42mm;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:3mm; overflow:hidden; }
+  figure.shot.has-img{ border-style:solid; border-color:var(--line); background:#fff; padding:0; }
+  figure.shot img{ max-width:100%; max-height:100%; border-radius:2.5mm; display:block; }
+  figure.shot .ph{ color:var(--muted); font-size:13pt; line-height:1.2; }
+  figure.shot .ph b{ color:var(--navy); display:block; font-size:14.5pt; margin-bottom:1.4mm; }
+  figure.shot .ph code{ font-size:11.5pt; }
+
+  /* ---------- RODAPÉ ---------- */
+  .footer{ flex:0 0 auto; display:grid; grid-template-columns:1fr 50mm; gap:8mm; align-items:center;
+    background:var(--navy); color:#fff; border-radius:6mm; padding:5.5mm 9mm; }
+  .footer h2{ font-size:15pt; color:#cfe0ff; margin-bottom:2mm; letter-spacing:.5pt; }
+  .refs{ columns:2; column-gap:8mm; font-size:11.5pt; line-height:1.24; color:#dbe5fb; }
+  .refs p{ margin-bottom:1.4mm; break-inside:avoid; } .refs b{ color:#fff; }
+  .qr{ text-align:center; }
+  .qr img{ width:42mm; height:42mm; background:#fff; border-radius:2.5mm; padding:2mm; }
+  .qr span{ display:block; font-size:11.5pt; color:#cfe0ff; margin-top:1.6mm; line-height:1.18; }
+  .qr b{ color:#fff; font-size:12.5pt; }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="header">
+    <div class="badge"><b>G9</b><span>GRUPO</span></div>
+    <div class="htext">
+      <h1>Abrindo a Caixa-Preta de Agentes de IA</h1>
+      <div class="sub">Observabilidade e Tracing com OpenTelemetry, OpenLLMetry &amp; Arize Phoenix</div>
+      <div class="meta"><b>Integrantes:</b> Gustavo T. Bicaletto · Gustavo J. P. de Paula · Nicolas K. O. de Oliveira · Ricardo A. da Silva
+        &nbsp;|&nbsp; Trabalho Final — Sessão de Painéis sobre Agentes de IA &nbsp;|&nbsp; <b>11/06/2026</b></div>
+    </div>
+  </header>
+
+  <!-- ===================== REGIÃO 3 COLUNAS ===================== -->
+  <section class="region">
+
+    <!-- ---------- COLUNA 1 ---------- -->
+    <div class="col">
+      <!-- BLOCO 1 -->
+      <div class="card">
+        <h2><span class="num">01</span> Contexto &amp; Motivação</h2>
+        <p>Arquiteturas agênticas operam com fluxos <strong>não-determinísticos</strong>: chamadas
+        assíncronas a LLMs, decisões em tempo de execução e <em>tool calling</em> dinâmico.</p>
+        <p>Quando o agente falha, surge a <strong>opacidade sistêmica</strong> — é difícil saber se o erro
+        veio do <span class="accent">prompt</span>, de uma <span class="accent">alucinação</span>, da
+        <span class="accent">passagem de argumentos</span> ou de um <span class="accent">loop</span>.</p>
+        <p>Sem rastreabilidade granular, depurar e controlar <strong>custo</strong> e <strong>latência</strong>
+        em produção é inviável. <strong>Observabilidade e tracing</strong> tornam cada decisão auditável.</p>
+      </div>
+      <!-- BLOCO 2 -->
+      <div class="card fill">
+        <h2><span class="num">02</span> Conceitos-Chave</h2>
+        <div class="gloss">
+          <div class="term"><div class="chip">Trace</div><div class="def">Linha do tempo completa de uma execução, da entrada à resposta final.</div></div>
+          <div class="term"><div class="chip">Span</div><div class="def">Unidade de trabalho do trace (1 chamada de LLM ou de tool) com tempo, atributos e status.</div></div>
+          <div class="term"><div class="chip">Tool calling</div><div class="def">O LLM decide acionar funções externas e passa argumentos estruturados.</div></div>
+          <div class="term"><div class="chip">OTel semconv</div><div class="def">Convenções semânticas do OpenTelemetry para spans de IA Generativa.</div></div>
+          <div class="term"><div class="chip">OTLP</div><div class="def">Protocolo de exportação de telemetria (HTTP/gRPC) para o coletor.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- COLUNA 2 (mais larga: diagrama) ---------- -->
+    <div class="col">
+      <!-- BLOCO 4 -->
+      <div class="card">
+        <h2><span class="num">04</span> Arquitetura &amp; Método</h2>
+        <div class="diagram">
+          <svg viewBox="0 0 900 470" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+            <defs>
+              <marker id="ar" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#42526e"/></marker>
+              <marker id="ard" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#0e7c86"/></marker>
+            </defs>
+            <rect x="14" y="36" width="170" height="64" rx="12" fill="#1f2d4d"/>
+            <text x="99" y="64" text-anchor="middle" fill="#fff" font-size="23" font-weight="700">Prompt do</text>
+            <text x="99" y="90" text-anchor="middle" fill="#fff" font-size="23" font-weight="700">Usuário</text>
+
+            <rect x="232" y="14" width="640" height="244" rx="16" fill="#f4f6fb" stroke="#c4cee0" stroke-width="2"/>
+            <text x="252" y="42" fill="#5b6678" font-size="20" font-weight="700">LangGraph · Grafo de Estados</text>
+
+            <rect x="286" y="68" width="232" height="90" rx="12" fill="#2b3f6b"/>
+            <text x="402" y="98" text-anchor="middle" fill="#fff" font-size="23" font-weight="700">Nó "agent"</text>
+            <text x="402" y="124" text-anchor="middle" fill="#cfe0ff" font-size="19">MockChatOpenAI</text>
+            <text x="402" y="146" text-anchor="middle" fill="#cfe0ff" font-size="19">(gpt-4o-mini)</text>
+
+            <polygon points="636,113 700,77 764,113 700,149" fill="#e08a00"/>
+            <text x="700" y="107" text-anchor="middle" fill="#fff" font-size="17" font-weight="700">should_</text>
+            <text x="700" y="126" text-anchor="middle" fill="#fff" font-size="17" font-weight="700">continue</text>
+
+            <rect x="286" y="182" width="232" height="62" rx="12" fill="#0e7c86"/>
+            <text x="402" y="208" text-anchor="middle" fill="#fff" font-size="22" font-weight="700">Nó "tools"</text>
+            <text x="402" y="230" text-anchor="middle" fill="#d4eef1" font-size="16">search_customer_db · call_logistics_api</text>
+
+            <rect x="800" y="89" width="58" height="48" rx="10" fill="#2e7d32"/>
+            <text x="829" y="119" text-anchor="middle" fill="#fff" font-size="19" font-weight="700">END</text>
+
+            <line x1="184" y1="68" x2="282" y2="108" stroke="#42526e" stroke-width="3" marker-end="url(#ar)"/>
+            <line x1="518" y1="113" x2="632" y2="113" stroke="#42526e" stroke-width="3" marker-end="url(#ar)"/>
+            <line x1="764" y1="113" x2="796" y2="113" stroke="#42526e" stroke-width="3" marker-end="url(#ar)"/>
+            <text x="780" y="103" fill="#2e7d32" font-size="16" font-weight="700">fim</text>
+            <path d="M690,147 C690,196 548,213 522,213" fill="none" stroke="#42526e" stroke-width="3" marker-end="url(#ar)"/>
+            <text x="592" y="198" fill="#e08a00" font-size="16" font-weight="700">tool_calls</text>
+            <path d="M286,202 C236,202 236,113 282,113" fill="none" stroke="#42526e" stroke-width="3" marker-end="url(#ar)"/>
+            <text x="214" y="162" fill="#5b6678" font-size="16" font-weight="700">loop</text>
+
+            <rect x="232" y="296" width="392" height="156" rx="16" fill="#e3f2f4" stroke="#9bd0d6" stroke-width="2"/>
+            <text x="252" y="324" fill="#0e7c86" font-size="20" font-weight="700">Telemetria (OpenTelemetry)</text>
+            <rect x="262" y="340" width="332" height="46" rx="10" fill="#0e7c86"/>
+            <text x="428" y="369" text-anchor="middle" fill="#fff" font-size="19" font-weight="700">Traceloop · OpenLLMetry SDK</text>
+            <text x="428" y="414" text-anchor="middle" fill="#0e7c86" font-size="17">spans Gen-AI via OTLP/HTTP</text>
+            <text x="428" y="436" text-anchor="middle" fill="#0e7c86" font-size="17" font-weight="700">→ porta :6006</text>
+
+            <rect x="660" y="296" width="212" height="156" rx="16" fill="#1f2d4d"/>
+            <text x="766" y="344" text-anchor="middle" fill="#fff" font-size="24" font-weight="800">Arize Phoenix</text>
+            <text x="766" y="378" text-anchor="middle" fill="#cfe0ff" font-size="18">UI local de traces</text>
+            <text x="766" y="402" text-anchor="middle" fill="#cfe0ff" font-size="18">127.0.0.1:6006</text>
+
+            <line x1="402" y1="158" x2="402" y2="294" stroke="#0e7c86" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#ard)"/>
+            <line x1="594" y1="363" x2="658" y2="363" stroke="#0e7c86" stroke-width="3" marker-end="url(#ard)"/>
+          </svg>
+        </div>
+        <p class="small" style="margin-top:3mm;">3 cenários induzidos — <strong>sucesso</strong>,
+        <strong>falha controlada</strong> e <strong>loop</strong> — disparam a captura automática de spans.
+        LLM mockado e determinístico: roda <strong>sem chaves de API</strong>.</p>
+      </div>
+      <!-- BLOCO 3 -->
+      <div class="card fill">
+        <h2><span class="num">03</span> Estado da Arte</h2>
+        <table class="soa">
+          <thead><tr><th>Ferramenta</th><th>Foco</th><th class="c">Ref.</th></tr></thead>
+          <tbody>
+            <tr><td><b>OpenTelemetry</b> <span class="tag">padrão</span></td><td>Convenções semânticas Gen-AI &amp; Agent Spans</td><td class="c">[4][5]</td></tr>
+            <tr><td><b>OpenLLMetry</b> <span class="tag">Traceloop</span></td><td>Instrumentação automática sobre OTel</td><td class="c">[6]</td></tr>
+            <tr><td><b>Arize Phoenix</b></td><td>UI local de traces e evals de LLM</td><td class="c">[7]</td></tr>
+            <tr><td><b>LangSmith</b></td><td>Tracing nativo p/ LangChain/LangGraph</td><td class="c">[1][2]</td></tr>
+            <tr><td><b>Langfuse</b></td><td><em>Data model</em> aberto de tracing</td><td class="c">[3]</td></tr>
+            <tr><td><b>Anthropic</b></td><td>Observabilidade multiagente</td><td class="c">[8]</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ---------- COLUNA 3 ---------- -->
+    <div class="col">
+      <!-- KPIs + STACK -->
+      <div class="card">
+        <h2><span class="num">★</span> Números &amp; Stack</h2>
+        <div class="kpis">
+          <div class="kpi k1"><b>16</b><span>spans capturados (3 cenários)</span></div>
+          <div class="kpi k2"><b>8</b><span>chamadas de LLM rastreadas</span></div>
+          <div class="kpi k3"><b>1</b><span>erro de tool destacado</span></div>
+          <div class="kpi k4"><b>$0,0005</b><span>custo total est. (GPT-4o-mini)</span></div>
+        </div>
+        <div class="stacklist">
+          <span>Python 3.11+</span><span>LangGraph</span><span>LangChain</span><span>OpenTelemetry</span>
+          <span>OpenLLMetry</span><span>Arize Phoenix</span><span>GPT-4o-mini</span><span>Ollama</span>
+        </div>
+      </div>
+      <!-- BLOCO 6 -->
+      <div class="card fill disc">
+        <h2><span class="num">06</span> Discussão &amp; Limitações</h2>
+        <h3 style="color:var(--ok)">✓ O que funcionou</h3>
+        <ul class="tick good">
+          <li>Captura <b>automática</b> de spans Gen-AI, sem instrumentar cada nó.</li>
+          <li>Erro de tool isolado e <b>destacado</b>, com stack trace navegável.</li>
+          <li>Loop de recursão <b>visível</b> e contido por <code>recursion_limit</code>.</li>
+          <li>Custo, tokens e latência <b>mensuráveis</b> por cenário.</li>
+        </ul>
+        <h3 style="color:var(--warn)">! Limitações</h3>
+        <ul class="tick lim">
+          <li>LLM <b>mockado</b>: custo/latência são estimativas, não medidas.</li>
+          <li>Phoenix <b>local</b>, sem coletor distribuído nem persistência longa.</li>
+          <li>Tokens via <b>heurística</b> (~4 chars/token), não tokenizer oficial.</li>
+        </ul>
+        <h3 style="color:var(--teal)">➜ Próximos passos</h3>
+        <ul class="tick next">
+          <li>Plugar <b>OpenAI/Ollama</b> reais para custo e latência medidos.</li>
+          <li>Adicionar <b>evals</b> do Phoenix e alertas de custo via OTLP Collector.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== BLOCO 5: EXPERIMENTO / DEMO ===================== -->
+  <section class="card exp">
+    <h2><span class="num">05</span> Experimento &amp; Demo — 3 cenários instrumentados</h2>
+    <div class="exp-grid">
+      <div class="scn ok">
+        <div class="st">Sucesso <span class="pill ok">OK</span></div>
+        <div class="pr">"…cadastro da Ana Silva e rastrear o último pedido dela?"</div>
+        <div class="fx">Encadeia <code>search_customer_db</code> → <code>call_logistics_api(#9834)</code> → resposta consolidada. Árvore de spans aninhada.</div>
+      </div>
+      <div class="scn err">
+        <div class="st">Falha controlada <span class="pill err">ERROR</span></div>
+        <div class="pr">"…rastreie o pedido 9901" (sem o "#")</div>
+        <div class="fx"><code>call_logistics_api("9901")</code> lança <code>ValueError</code>. Span fica <b>vermelho</b> com stack trace — sem quebrar a app.</div>
+      </div>
+      <div class="scn warn">
+        <div class="st">Loop repetitivo <span class="pill warn">ABORT</span></div>
+        <div class="pr">"Gere um comportamento de loop nas chamadas…"</div>
+        <div class="fx">Decisão cíclica até <code>recursion_limit=5</code> → <code>GraphRecursionError</code>. Padrão repetitivo visível na timeline.</div>
+      </div>
+    </div>
+
+    <div class="exp-bottom">
+      <!-- Tabela de métricas -->
+      <div>
+        <table>
+          <thead><tr><th>Cenário</th><th class="c">Spans</th><th class="c">LLM</th><th class="c">Tools</th><th class="c">Erros</th><th class="c">Passos</th><th class="c">Tokens*</th><th class="c">Latência*</th><th class="c">Custo*</th></tr></thead>
+          <tbody>
+            <tr><td><b>Sucesso</b></td><td class="c">6</td><td class="c">3</td><td class="c">2</td><td class="c">0</td><td class="c">5</td><td class="c">947</td><td class="c">2,2 s</td><td class="c">$0,00022</td></tr>
+            <tr><td><b>Falha</b></td><td class="c">4</td><td class="c">2</td><td class="c">1</td><td class="c">1</td><td class="c">3</td><td class="c">526</td><td class="c">1,4 s</td><td class="c">$0,00011</td></tr>
+            <tr><td><b>Loop</b></td><td class="c">6</td><td class="c">3</td><td class="c">2</td><td class="c">0</td><td class="c">5</td><td class="c">867</td><td class="c">2,1 s</td><td class="c">$0,00018</td></tr>
+            <tr class="tot"><td>TOTAL</td><td class="c">16</td><td class="c">8</td><td class="c">5</td><td class="c">1</td><td class="c">13</td><td class="c">2340</td><td class="c">5,7 s</td><td class="c">$0,00050</td></tr>
+          </tbody>
+        </table>
+        <p class="small" style="margin-top:2.5mm;">Spans, LLM, tools, erros e passos são <b>contagens exatas</b>.
+        (*) Tokens, latência e custo são <b>estimativas</b> (LLM mockado) — <code>app/collect_metrics.py</code>
+        (~4 chars/token; preços GPT-4o-mini).</p>
+      </div>
+      <!-- Gráficos -->
+      <div class="charts">
+        <figure><img src="../results/tokens_chart.svg" alt="Tokens por cenário"></figure>
+        <figure><img src="../results/latency_chart.svg" alt="Latência por cenário"></figure>
+      </div>
+      <!-- Screenshots do Phoenix -->
+      <div class="shots">
+        <figure class="shot">
+          <img src="../docs/phoenix-sucesso.png" alt="Trace de sucesso no Phoenix"
+               onload="this.parentNode.classList.add('has-img')" onerror="this.remove()">
+          <div class="ph"><b>Phoenix — Sucesso</b>Árvore de spans aninhada.<br><code>docs/phoenix-sucesso.png</code></div>
+        </figure>
+        <figure class="shot">
+          <img src="../docs/phoenix-erro.png" alt="Span de erro no Phoenix"
+               onload="this.parentNode.classList.add('has-img')" onerror="this.remove()">
+          <div class="ph"><b>Phoenix — Erro</b>Span <b style="color:#c0392b">ERROR</b> + stack trace.<br><code>docs/phoenix-erro.png</code></div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== RODAPÉ: REFERÊNCIAS + QR ===================== -->
+  <footer class="footer">
+    <div>
+      <h2>REFERÊNCIAS (IEEE) — documentação oficial &amp; papers</h2>
+      <div class="refs">
+        <p><b>[1]</b> LangChain. <i>LangSmith Observability Concepts.</i> 2024-2025.</p>
+        <p><b>[2]</b> LangChain. <i>Tracing with LangGraph.</i> 2025.</p>
+        <p><b>[3]</b> Langfuse GmbH. <i>Tracing Data Model.</i> 2024-2025.</p>
+        <p><b>[4]</b> OpenTelemetry. <i>Semantic Conventions for Gen-AI.</i> 2024-2025.</p>
+        <p><b>[5]</b> OpenTelemetry. <i>Agent Spans.</i> 2025.</p>
+        <p><b>[6]</b> Traceloop. <i>OpenLLMetry.</i> 2024-2025.</p>
+        <p><b>[7]</b> Arize AI. <i>Phoenix LLM Tracing.</i> 2024-2025.</p>
+        <p><b>[8]</b> Anthropic. <i>Multi-Agent Research System.</i> 2025.</p>
+      </div>
+    </div>
+    <div class="qr">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&amp;margin=0&amp;data=https%3A%2F%2Fgithub.com%2Fnicolaskms%2Fobservability-tracing" alt="QR do repositório">
+      <span><b>Repositório</b><br>github.com/nicolaskms/<br>observability-tracing</span>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

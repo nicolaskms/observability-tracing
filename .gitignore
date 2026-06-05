@@ -1,1 +1,49 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Ambientes virtuais
+venv/
+.venv/
+env/
+ENV/
+
+# Cache de ferramentas
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ===== Arize Phoenix / Telemetria =====
+# Dados de trace persistidos localmente pelo Phoenix
+.phoenix/
+phoenix.db
+
+# ===== Artefatos temporários de render/checagem do painel =====
+results/_*
+*_poster_check.pdf
+*_poster_preview.png
+
+# ===== Sistema operacional / IDE =====
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ===== Vídeos (muito grandes para o GitHub — hospedar externamente) =====
+docs/*.mp4
+docs/*.mov
+docs/*.avi
+
+# ===== Node (legado do protótipo antigo, mantido por segurança) =====
 node_modules/
+
+# ===== Segredos =====
+# O .env versionado contém apenas valores mock (sem chaves reais).
+# Caso crie um .env com uma OPENAI_API_KEY real, renomeie para .env.local
+.env.local

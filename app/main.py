@@ -54,8 +54,8 @@ def main():
     # 2. Inicializa o painel local do Phoenix e a instrumentação do Traceloop
     init_tracing()
     
-    # Aguarda 2 segundos para inicialização da rede local
-    time.sleep(2)
+    # Aguarda o Phoenix subir completamente antes de exportar os primeiros spans
+    time.sleep(8)
     
     # 3. DISPARO DOS TRÊS EXPERIMENTOS DO CHECKPOINT 1
     
@@ -66,8 +66,8 @@ def main():
         "Olá, pode verificar o status do cadastro da Ana Silva e rastrear o último pedido dela?"
     )
     
-    time.sleep(3)
-    
+    time.sleep(5)
+
     # --- Cenário 2: Falha Controlada na API de Logística ---
     # O assistente tenta buscar o pedido 9901 sem o prefixo '#', gerando uma exceção de validação.
     run_scenario(
@@ -75,8 +75,8 @@ def main():
         "Por favor, rastreie o status de entrega do pedido 9901"
     )
     
-    time.sleep(3)
-    
+    time.sleep(5)
+
     # --- Cenário 3: Loop Repetitivo de Decisões ---
     # Forçamos o modelo a repetir a ação e configuramos um limite baixo de recursão (limit=5).
     # Isso demonstra o controle de segurança do LangGraph e o desenho visual do loop no Phoenix.

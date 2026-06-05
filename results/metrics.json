@@ -1,0 +1,82 @@
+{
+  "generated_at": "2026-06-05 01:50 UTC",
+  "model": "gpt-4o-mini (mockado)",
+  "assumptions": {
+    "chars_per_token": 4,
+    "tool_schema_overhead_tokens": 180,
+    "price_input_per_million_usd": 0.15,
+    "price_output_per_million_usd": 0.6,
+    "llm_latency_ms": 620,
+    "tool_db_latency_ms": 130,
+    "tool_api_latency_ms": 165,
+    "usd_to_brl": 5.4
+  },
+  "scenarios": [
+    {
+      "id": "sucesso",
+      "name": "Experimento 1 — Execução Bem-Sucedida",
+      "prompt": "Olá, pode verificar o status do cadastro da Ana Silva e rastrear o último pedido dela?",
+      "recursion_limit": 15,
+      "final_status": "Sucesso",
+      "status_color": "ok",
+      "spans": 6,
+      "llm_calls": 3,
+      "tool_calls": 2,
+      "tool_errors": 0,
+      "graph_steps": 5,
+      "prompt_tokens": 784,
+      "completion_tokens": 163,
+      "total_tokens": 947,
+      "est_cost_usd": 0.000215,
+      "est_cost_brl": 0.001163,
+      "est_latency_ms": 2155
+    },
+    {
+      "id": "falha",
+      "name": "Experimento 2 — Falha Controlada na Tool",
+      "prompt": "Por favor, rastreie o status de entrega do pedido 9901",
+      "recursion_limit": 15,
+      "final_status": "Erro tratado",
+      "status_color": "error",
+      "spans": 4,
+      "llm_calls": 2,
+      "tool_calls": 1,
+      "tool_errors": 1,
+      "graph_steps": 3,
+      "prompt_tokens": 454,
+      "completion_tokens": 72,
+      "total_tokens": 526,
+      "est_cost_usd": 0.000111,
+      "est_cost_brl": 0.000601,
+      "est_latency_ms": 1405
+    },
+    {
+      "id": "loop",
+      "name": "Experimento 3 — Loop Repetitivo (Estouro de Recursão)",
+      "prompt": "Gere um comportamento de loop nas chamadas de ferramentas para testar o sistema.",
+      "recursion_limit": 5,
+      "final_status": "GraphRecursionError (abortado)",
+      "status_color": "warn",
+      "spans": 6,
+      "llm_calls": 3,
+      "tool_calls": 2,
+      "tool_errors": 0,
+      "graph_steps": 5,
+      "prompt_tokens": 762,
+      "completion_tokens": 105,
+      "total_tokens": 867,
+      "est_cost_usd": 0.000177,
+      "est_cost_brl": 0.000957,
+      "est_latency_ms": 2120
+    }
+  ],
+  "totals": {
+    "spans": 16,
+    "llm_calls": 8,
+    "tool_calls": 5,
+    "tool_errors": 1,
+    "total_tokens": 2340,
+    "est_cost_usd": 0.000503,
+    "est_latency_ms": 5680
+  }
+}
